@@ -1,0 +1,36 @@
+@startuml Hotelio To-Be Architecture
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(user, "User", "Web/Mobile client")
+
+System_Boundary(hotelio, "Hotelio Platform") {
+    Container(gateway, "Apollo Gateway", "Node.js", "GraphQL Federation + ACL")
+    Container(bookingSub, "Booking Subgraph", "Node.js", "Bookings by userId")
+    Container(hotelSub, "Hotel Subgraph", "Node.js", "Hotel details")
+
+    Container(monolith, "Monolith", "Spring Boot", "Legacy: users, hotels, promos, reviews")
+    Container(bookingSvc, "booking-service", "Python/gRPC", "Create booking, own DB")
+    Container(historySvc, "booking-history-service", "Python", "Analytics read model")
+    Container(kafka, "Kafka", "Event Bus", "BookingCreated events")
+
+    ContainerDb(monolithDb, "Monolith DB", "PostgreSQL")
+    ContainerDb(bookingDb, "Booking DB", "PostgreSQL")
+    ContainerDb(historyDb, "History DB", "PostgreSQL")
+}
+
+Rel(user, gateway, "GraphQL")
+Rel(gateway, bookingSub, "Federation")
+Rel(gateway, hotelSub, "Federation")
+Rel(bookingSub, bookingSvc, "gRPC")
+Rel(hotelSub, monolith, "REST")
+Rel(monolith, bookingSvc, "gRPC proxy on create")
+Rel(monolith, monolithDb, "R/W")
+Rel(bookingSvc, monolith, "REST validation")
+Rel(bookingSvc, bookingDb, "R/W")
+Rel(bookingSvc, kafka, "Publish")
+Rel(kafka, historySvc, "Consume")
+Rel(historySvc, historyDb, "R/W")
+
+@enduml

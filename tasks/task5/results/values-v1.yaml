@@ -1,4 +1,8 @@
-replicaCount: 1
+appName: booking-service
+createService: true
+deploymentName: booking-service-v1
+
+replicaCount: 2
 
 image:
   name: booking-service

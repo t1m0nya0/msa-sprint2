@@ -16,6 +16,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: hotelio
       BOOKING_SERVICE_EXTERNAL_HOST: booking-service
       BOOKING_SERVICE_EXTERNAL_PORT: 9090
+    depends_on:
+      - monolith-db
+      - booking-service
 
   monolith-db:
     image: postgres:15
@@ -31,8 +34,66 @@ services:
     networks:
       - hotelio-net
 
+  booking-service:
+    build: ./booking-service
+    container_name: booking-service
+    ports:
+      - "9090:9090"
+    networks:
+      - hotelio-net
+    environment:
+      MONOLITH_URL: http://hotelio-monolith:8080
+      DB_HOST: booking-db
+      DB_NAME: booking
+      DB_USER: booking
+      DB_PASSWORD: booking
+      KAFKA_BOOTSTRAP: kafka:9092
+    depends_on:
+      - booking-db
+      - kafka
+
+  booking-db:
+    image: postgres:15
+    container_name: booking-db
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+      POSTGRES_DB: booking
+    ports:
+      - "5433:5432"
+    networks:
+      - hotelio-net
+
+  booking-history-service:
+    build: ./booking-history-service
+    container_name: booking-history-service
+    networks:
+      - hotelio-net
+    environment:
+      DB_HOST: booking-history-db
+      DB_NAME: history
+      DB_USER: history
+      DB_PASSWORD: history
+      KAFKA_BOOTSTRAP: kafka:9092
+    depends_on:
+      - booking-history-db
+      - kafka
+
+  booking-history-db:
+    image: postgres:15
+    container_name: booking-history-db
+    environment:
+      POSTGRES_USER: history
+      POSTGRES_PASSWORD: history
+      POSTGRES_DB: history
+    ports:
+      - "5434:5432"
+    networks:
+      - hotelio-net
+
   kafka:
     image: confluentinc/cp-kafka:7.2.1
+    container_name: hotelio-kafka
     ports:
       - "9092:9092"
     environment:
@@ -42,8 +103,12 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - hotelio-net
+    depends_on:
+      - zookeeper
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.1
+    container_name: hotelio-zookeeper
     ports:
       - "2181:2181"
     environment:

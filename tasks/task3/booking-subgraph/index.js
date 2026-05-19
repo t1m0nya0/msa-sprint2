@@ -2,6 +2,35 @@ import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
+import grpc from '@grpc/grpc-js';
+import protoLoader from '@grpc/proto-loader';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const packageDefinition = protoLoader.loadSync(path.join(__dirname, 'booking.proto'), {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
+const bookingProto = grpc.loadPackageDefinition(packageDefinition).booking;
+
+const bookingClient = new bookingProto.BookingService(
+  process.env.BOOKING_GRPC_HOST || 'booking-service:9090',
+  grpc.credentials.createInsecure()
+);
+
+function listBookings(userId) {
+  return new Promise((resolve, reject) => {
+    bookingClient.ListBookings({ user_id: userId }, (err, response) => {
+      if (err) return reject(err);
+      resolve(response.bookings || []);
+    });
+  });
+}
 
 const typeDefs = gql`
   type Booking @key(fields: "id") {
@@ -10,22 +39,53 @@ const typeDefs = gql`
     hotelId: String!
     promoCode: String
     discountPercent: Int
+    hotel: Hotel
+  }
+
+  type Hotel @key(fields: "id") {
+    id: ID!
   }
 
   type Query {
     bookingsByUser(userId: String!): [Booking]
   }
-
 `;
 
 const resolvers = {
   Query: {
     bookingsByUser: async (_, { userId }, { req }) => {
-		// TODO: Реальный вызов к grpc booking-сервису или заглушка + ACL
+      const headerUserId = req.headers['userid'];
+      if (!headerUserId || headerUserId !== userId) {
+        console.log(`ACL deny: header=${headerUserId}, requested=${userId}`);
+        return [];
+      }
+      const bookings = await listBookings(userId);
+      return bookings.map((b) => ({
+        id: b.id,
+        userId: b.user_id,
+        hotelId: b.hotel_id,
+        promoCode: b.promo_code || null,
+        discountPercent: Math.round(b.discount_percent || 0),
+      }));
     },
   },
   Booking: {
-	  // TODO: Реальный вызов к grpc booking-сервису или заглушка + ACL
+    hotel: (booking) => ({ __typename: 'Hotel', id: booking.hotelId }),
+    __resolveReference: async (ref, { req }) => {
+      const headerUserId = req.headers['userid'];
+      const bookings = await listBookings(headerUserId);
+      const booking = bookings.find((b) => b.id === ref.id);
+      if (!booking || booking.user_id !== headerUserId) {
+        return null;
+      }
+      return {
+        id: booking.id,
+        userId: booking.user_id,
+        hotelId: booking.hotel_id,
+        promoCode: booking.promo_code || null,
+        discountPercent: Math.round(booking.discount_percent || 0),
+      };
+    },
   },
 };
 
@@ -37,5 +97,5 @@ startStandaloneServer(server, {
   listen: { port: 4001 },
   context: async ({ req }) => ({ req }),
 }).then(() => {
-  console.log('✅ Booking subgraph ready at http://localhost:4001/');
+  console.log('Booking subgraph ready at http://localhost:4001/');
 });

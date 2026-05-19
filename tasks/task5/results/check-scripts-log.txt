@@ -1,0 +1,27 @@
+========== Final verification Tue May 19 05:06:21 PM +05 2026 ==========
+▶️ Проверка установки Istio...
+NAME                                   READY   STATUS    RESTARTS   AGE
+istio-egressgateway-75f6974f79-dq5fb   1/1     Running   0          9m56s
+istio-ingressgateway-cf9cdcfbc-ktm6k   1/1     Running   0          9m56s
+istiod-5d9b54d5c4-rs7xf                1/1     Running   0          10m
+▶️ Проверка Istio инъекции в default namespace...
+enabled
+▶️ Поды booking-service с sidecar:
+NAME                                  READY   STATUS    RESTARTS   AGE
+booking-service-v1-79fff4bb7-kppxg    2/2     Running   0          16s
+booking-service-v1-79fff4bb7-zxzgj    2/2     Running   0          6m44s
+booking-service-v2-55fdb58d76-bfh8g   2/2     Running   0          7m2s
+
+▶️ Checking canary release (90% v1, 10% v2) via service mesh...
+v1=87 v2=13
+[PASS] Canary split looks correct
+
+▶️ Проверка Feature Flag (X-Feature-Enabled: true)...
+Response: pong-v2-feature
+[PASS] Feature flag routing OK
+
+▶️ Testing fallback route (kill one v1 pod)...
+Deleting pod: booking-service-v1-79fff4bb7-kppxg
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "booking-service-v1-79fff4bb7-kppxg" force deleted from default namespace
+pongpong-v2pongpongpong[PASS] Fallback route working

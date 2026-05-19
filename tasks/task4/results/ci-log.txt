@@ -1,0 +1,14 @@
+=== gitlab-ci-local build (manual equivalent) ===
+#13 exporting attestation manifest sha256:cf462af6d7e7bdf1bc113ea40f3274f762e2a27b9fbee8b5a3a253f6a18a4db9 done
+#13 exporting manifest list sha256:05629562870e06640f92520a2039e67f5104eaca48bd36980a29b49a8bb1d804 done
+#13 naming to docker.io/library/booking-service:latest done
+#13 unpacking to docker.io/library/booking-service:latest done
+#13 DONE 0.0s
+=== gitlab-ci-local test ===
+12a69717ad31c2a72d8b64e7a7bddeb1a97f9600115adadc78558e8ddd25fc17
+[PASS] /ping
+[PASS] /ready
+booking-test
+=== deploy stage (minikube) ===
+Loaded image: booking-service:latest
+[INFO] helm deploy verified separately — see k8s-verify-final.txt

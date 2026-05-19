@@ -1,3 +1,7 @@
+appName: booking-service
+createService: true
+deploymentName: booking-service-v1
+
 replicaCount: 1
 
 image:

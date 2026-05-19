@@ -1,3 +1,7 @@
+appName: booking-service
+createService: false
+deploymentName: booking-service-v2
+
 replicaCount: 1
 
 image:
@@ -12,11 +16,11 @@ service:
 
 env:
   - name: ENABLE_FEATURE_X
-    value: "false"
+    value: "true"
   - name: VERSION
-    value: "v1"
+    value: "v2"
 
-version: v1
+version: v2
 
 resources:
   requests:

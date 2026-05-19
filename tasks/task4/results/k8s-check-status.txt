@@ -1,0 +1,40 @@
+========== Task5 verification Tue May 19 05:00:37 PM +05 2026 ==========
+▶️ Проверка установки Istio...
+NAME                                   READY   STATUS    RESTARTS   AGE
+istio-egressgateway-75f6974f79-dq5fb   1/1     Running   0          4m12s
+istio-ingressgateway-cf9cdcfbc-ktm6k   1/1     Running   0          4m12s
+istiod-5d9b54d5c4-rs7xf                1/1     Running   0          4m44s
+▶️ Проверка Istio инъекции в default namespace...
+enabled
+▶️ Поды booking-service с sidecar:
+NAME                                  READY   STATUS    RESTARTS   AGE
+booking-service-v1-79fff4bb7-cvtzs    2/2     Running   0          41s
+booking-service-v1-79fff4bb7-zxzgj    2/2     Running   0          60s
+booking-service-v2-55fdb58d76-bfh8g   2/2     Running   0          78s
+
+▶️ Checking canary release (90% v1, 10% v2) via service mesh...
+v1=89 v2=11
+[PASS] Canary split looks correct
+
+▶️ Testing fallback route (kill one v1 pod)...
+Deleting pod: booking-service-v1-79fff4bb7-cvtzs
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "booking-service-v1-79fff4bb7-cvtzs" force deleted from default namespace
+pongpong-v2pongpongpong[PASS] Fallback route working
+
+▶️ Проверка Feature Flag (X-Feature-Enabled: true)...
+Response: pong-v2-feature
+[PASS] Feature flag routing OK
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+booking-service-v1-79fff4bb7-q84cn    2/2     Running   0          8s
+booking-service-v1-79fff4bb7-zxzgj    2/2     Running   0          69s
+booking-service-v2-55fdb58d76-bfh8g   2/2     Running   0          87s
+NAME                                                 GATEWAYS   HOSTS                 AGE
+virtualservice.networking.istio.io/booking-service              ["booking-service"]   87s
+
+NAME                                                  HOST              AGE
+destinationrule.networking.istio.io/booking-service   booking-service   87s
+
+NAME                                                   AGE
+envoyfilter.networking.istio.io/booking-feature-flag   87s
