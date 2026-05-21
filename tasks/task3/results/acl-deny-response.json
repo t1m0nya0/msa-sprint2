@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "message": "Доступ запрещён: можно просматривать только свои бронирования (userid=test-user-3, запрошен userId=test-user-2)",
+      "path": ["bookingsByUser"],
+      "extensions": {
+        "code": "FORBIDDEN",
+        "serviceName": "booking"
+      }
+    }
+  ],
+  "data": {
+    "bookingsByUser": null
+  }
+}

@@ -2,6 +2,7 @@ import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
+import { GraphQLError } from 'graphql';
 import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
 import path from 'path';
@@ -32,6 +33,20 @@ function listBookings(userId) {
   });
 }
 
+function assertBookingAccess(headerUserId, requestedUserId) {
+  if (!headerUserId) {
+    throw new GraphQLError('Требуется заголовок userid для доступа к бронированиям', {
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
+  }
+  if (headerUserId !== requestedUserId) {
+    throw new GraphQLError(
+      `Доступ запрещён: можно просматривать только свои бронирования (userid=${headerUserId}, запрошен userId=${requestedUserId})`,
+      { extensions: { code: 'FORBIDDEN' } },
+    );
+  }
+}
+
 const typeDefs = gql`
   type Booking @key(fields: "id") {
     id: ID!
@@ -55,10 +70,7 @@ const resolvers = {
   Query: {
     bookingsByUser: async (_, { userId }, { req }) => {
       const headerUserId = req.headers['userid'];
-      if (!headerUserId || headerUserId !== userId) {
-        console.log(`ACL deny: header=${headerUserId}, requested=${userId}`);
-        return [];
-      }
+      assertBookingAccess(headerUserId, userId);
       const bookings = await listBookings(userId);
       return bookings.map((b) => ({
         id: b.id,
@@ -73,10 +85,17 @@ const resolvers = {
     hotel: (booking) => ({ __typename: 'Hotel', id: booking.hotelId }),
     __resolveReference: async (ref, { req }) => {
       const headerUserId = req.headers['userid'];
+      if (!headerUserId) {
+        throw new GraphQLError('Требуется заголовок userid', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
       const bookings = await listBookings(headerUserId);
       const booking = bookings.find((b) => b.id === ref.id);
       if (!booking || booking.user_id !== headerUserId) {
-        return null;
+        throw new GraphQLError(`Бронирование ${ref.id} недоступно для пользователя ${headerUserId}`, {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
       return {
         id: booking.id,
