@@ -3,6 +3,21 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
 
+const MONOLITH_URL = process.env.MONOLITH_URL || 'http://hotelio-monolith:8080';
+
+async function fetchHotel(id) {
+  const resp = await fetch(`${MONOLITH_URL}/api/hotels/${id}`);
+  if (!resp.ok) return null;
+  const hotel = await resp.json();
+  const name = (hotel.description || hotel.id || 'Hotel').split(' ').slice(0, 3).join(' ');
+  return {
+    id: hotel.id,
+    name,
+    city: hotel.city,
+    stars: Math.round(hotel.rating || 0),
+  };
+}
+
 const typeDefs = gql`
   type Hotel @key(fields: "id") {
     id: ID!
@@ -18,13 +33,12 @@ const typeDefs = gql`
 
 const resolvers = {
   Hotel: {
-    __resolveReference: async ({ id }) => {
-      // TODO: Реальный вызов к hotel-сервису или заглушка
-    },
+    __resolveReference: async ({ id }) => fetchHotel(id),
   },
   Query: {
     hotelsByIds: async (_, { ids }) => {
-      // TODO: Заглушка или REST-запрос
+      const hotels = await Promise.all(ids.map((id) => fetchHotel(id)));
+      return hotels.filter(Boolean);
     },
   },
 };
@@ -36,5 +50,5 @@ const server = new ApolloServer({
 startStandaloneServer(server, {
   listen: { port: 4002 },
 }).then(() => {
-  console.log('✅ Hotel subgraph ready at http://localhost:4002/');
+  console.log('Hotel subgraph ready at http://localhost:4002/');
 });

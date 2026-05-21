@@ -1,0 +1,12 @@
+=== Task4 booking-service status ===
+NAME                                  READY   STATUS    RESTARTS   AGE
+booking-service-v1-79fff4bb7-q84cn    2/2     Running   0          8s
+booking-service-v1-79fff4bb7-zxzgj    2/2     Running   0          69s
+booking-service-v2-55fdb58d76-bfh8g   2/2     Running   0          87s
+NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+booking-service   ClusterIP   10.100.133.211   <none>        80/TCP    88s
+=== In-mesh /ping ===
+pong
+ready
+=== Port-forward /ping ===
+pong-v2

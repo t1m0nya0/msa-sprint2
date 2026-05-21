@@ -1,0 +1,17 @@
+=== curl http://localhost:8084/api/bookings?userId=test-user-2 ===
+[{"id":1001,"userId":"test-user-2","hotelId":"test-hotel-1","promoCode":"TESTCODE1","discountPercent":10.0,"price":90.0,"createdAt":"2026-05-19T11:22:48.136768Z"},{"id":1004,"userId":"test-user-2","hotelId":"test-hotel-1","promoCode":"TESTCODE1","discountPercent":10.0,"price":90.0,"createdAt":"2026-05-19T11:22:48.568230Z"}]
+=== docker ps ===
+NAMES                     STATUS                  PORTS
+trusting_shaw             Up Less than a second   
+booking-service           Up 39 seconds           0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+booking-history-service   Up 2 minutes            
+hotelio-monolith          Up 2 minutes            0.0.0.0:8084->8080/tcp, [::]:8084->8080/tcp
+hotelio-kafka             Up 2 minutes            0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
+booking-history-db        Up 2 minutes            0.0.0.0:5434->5432/tcp, [::]:5434->5432/tcp
+hotelio-db                Up 2 minutes            0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+booking-db                Up 2 minutes            0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp
+hotelio-zookeeper         Up 2 minutes            2888/tcp, 0.0.0.0:2181->2181/tcp, [::]:2181->2181/tcp, 3888/tcp
+=== monolith grpc beans ===
+➡️  BookingService beans:
+    - bookingService: class com.hotelio.monolith.service.BookingService
+    - grpcBookingService: class com.hotelio.GrpcBookingService

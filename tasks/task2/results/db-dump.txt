@@ -1,0 +1,21 @@
+=== monolith bookings ===
+[{"id":1001,"userId":"test-user-2","hotelId":"test-hotel-1","promoCode":"TESTCODE1","discountPercent":10.0,"price":90.0,"createdAt":"2026-05-19T12:00:28.114601Z"},{"id":1004,"userId":"test-user-2","hotelId":"test-hotel-1","promoCode":"TESTCODE1","discountPercent":10.0,"price":90.0,"createdAt":"2026-05-19T12:00:28.518682Z"}]
+=== booking-db ===
+  id  |   user_id   |   hotel_id   | promo_code | discount_percent | price |          created_at           
+------+-------------+--------------+------------+------------------+-------+-------------------------------
+ 1001 | test-user-2 | test-hotel-1 | TESTCODE1  |               10 |    90 | 2026-05-19 12:00:28.114601+00
+ 1002 | test-user-3 | test-hotel-1 |            |                0 |    80 | 2026-05-19 12:00:28.114601+00
+ 1003 | test-user-3 | test-hotel-1 |            |                0 |    80 | 2026-05-19 12:00:28.37955+00
+ 1004 | test-user-2 | test-hotel-1 | TESTCODE1  |               10 |    90 | 2026-05-19 12:00:28.518682+00
+(4 rows)
+
+=== history-db ===
+ id | booking_id |   user_id   |   hotel_id   | promo_code | discount_percent | price | booking_date |          created_at           
+----+------------+-------------+--------------+------------+------------------+-------+--------------+-------------------------------
+ 11 | 1004       | test-user-2 | test-hotel-1 | TESTCODE1  |               10 |    90 | 2026-05-19   | 2026-05-19 12:00:28.628052+00
+ 10 | 1003       | test-user-3 | test-hotel-1 |            |                0 |    80 | 2026-05-19   | 2026-05-19 12:00:28.48987+00
+  9 | 1004       | test-user-2 | test-hotel-1 | TESTCODE1  |               10 |    90 | 2026-05-19   | 2026-05-19 11:57:27.642102+00
+  8 | 1003       | test-user-3 | test-hotel-1 |            |                0 |    80 | 2026-05-19   | 2026-05-19 11:57:27.428009+00
+  7 | 1004       | test-user-2 | test-hotel-1 | TESTCODE1  |               10 |    90 | 2026-05-19   | 2026-05-19 11:53:12.120627+00
+(5 rows)
+

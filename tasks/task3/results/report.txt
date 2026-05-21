@@ -1,0 +1,7 @@
+=== Успешный запрос (userid совпадает) ===
+{"data":{"bookingsByUser":[{"id":"1001","hotel":{"name":"Modern hotel in","city":"Seoul"},"discountPercent":10},{"id":"1004","hotel":{"name":"Modern hotel in","city":"Seoul"},"discountPercent":10}]}}
+
+=== ACL deny (userid: test-user-3, запрос test-user-2) — ошибка FORBIDDEN ===
+{"errors":[{"message":"Доступ запрещён: можно просматривать только свои бронирования (userid=test-user-3, запрошен userId=test-user-2)","path":["bookingsByUser"],"extensions":{"code":"FORBIDDEN","serviceName":"booking"}}],"data":{"bookingsByUser":null}}
+
+Скриншот: acl-deny-screenshot.png
